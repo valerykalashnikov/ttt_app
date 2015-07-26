@@ -1,7 +1,4 @@
-require 'byebug'
-
 require_relative 'player'
-require_relative 'board'
 require_relative 'game'
 
 require 'sinatra/base'
@@ -11,14 +8,13 @@ require 'json'
 require 'rabl'
 
 class TicTacToe < Sinatra::Base
-  use Rack::Session::Pool, expire_after: 64800, secret: '*&(^B234'
+  use Rack::Session::Pool, expire_after: 64800, secret: '*&(^B234' unless test?
 
   configure :development do
     register Sinatra::Reloader
   end
 
   Rabl.register!
-
 
   set :root, File.dirname(__FILE__)
   set :public_dir, 'public'
@@ -31,9 +27,13 @@ class TicTacToe < Sinatra::Base
     request_payload = JSON.parse request.body.read
     player1 = Player.new({turn: "X", name: request_payload["player1"]})
     player2 = Player.new({turn: "O", name: request_payload["player2"]})
-    @game = Game.new([player1, player2])
-    session[:"game_#{@game.id}"] = @game
-    rabl :game
+    begin
+      @game = Game.new([player1, player2])
+      session[:"game_#{@game.id}"] = @game
+      rabl :game
+    rescue PlayersMustHaveNames => e
+      render_error(e)
+    end
   end
 
   patch '/game/:id/get-move', provides: :json do
@@ -46,11 +46,18 @@ class TicTacToe < Sinatra::Base
     rabl :get_move
   end
 
-  delete '/game/:id', provides: :json do
+  delete '/game/:id' do
     session.delete :"game_#{params[:id]}"
+    status 204
   end
 
   private
+
+  def render_error exception
+    @message = exception.message
+    status 422
+    rabl :errors, :format => "json"
+  end
 
   def set_position game, human_move
     current_player = game.current_player

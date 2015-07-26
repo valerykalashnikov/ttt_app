@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Game = require('./game');
-var newGame = new Game();
-document.querySelector('#container').appendChild(newGame.render().el)
+var newGame = new Game({el: document.getElementById('container')});
+newGame.render();
 
 },{"./game":3}],2:[function(require,module,exports){
 var Board = AmpersandView.extend({
@@ -14,6 +14,7 @@ var Board = AmpersandView.extend({
         var html = [
             '<div id="container" class="container">' +
                 '<div class="message">' + this.player.name + ': '+ this.player.turn + ' </div>' +
+                '<button class="play-again">Play Again</button>' +
                 '<div class="gameboard">' +
                     '<div id="1" class="square r-border b-border"></div>'+
                     '<div id="2" class="square r-border b-border"></div>'+
@@ -32,7 +33,8 @@ var Board = AmpersandView.extend({
     },
 
     events: {
-        "click .square": "getMove"
+        "click .square": "getMove",
+        "click .play-again": "playAgain"
     },
 
     getMove: function getMove(e) {
@@ -47,13 +49,24 @@ var Board = AmpersandView.extend({
         );
     },
 
+    playAgain: function playAgain(e){
+        this.destroyGame(function(){
+            window.location.href = '/'
+        })
+    },
+
     _renderNextStep: function renderNextStep(response) {
         this.player = response.player;
         $('.message').html(this.player.name + ':' + this.player.turn);
         if (response.state !== "continue") {
+            this.eventManager.unbind('click', 'getMove');
+            this.off('.square');
             this._gameOver(response.state);
+            this._showWinPositions();
+            $('.play-again').show();
         }
     },
+
 
     _gameOver: function gameOver(state) {
         var renderEndMessage = function renderEndMessage(text) {
@@ -71,6 +84,34 @@ var Board = AmpersandView.extend({
                 );
             break;
         }
+    },
+
+    _showWinPositions: function showWinPositions() {
+        var winCombinations = [ [1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 4, 7],
+                            [2, 5, 8], [3, 6, 9], [1, 5, 9], [3, 5, 7] ];
+        var allEq = function(winIndexes){
+            var winValues = [];
+            $.each(winIndexes, function(index, winIndex){
+                winValues.push($('#'+winIndex).text());
+            });
+            for(var i = 1; i < winValues.length; i++) {
+                if(winValues[i] !== winValues[0]) {
+                    return false;
+                }
+            }
+            return true
+        };
+        $.each(winCombinations, function(index, winIndexes){
+            if (!!allEq(winIndexes)) {
+                $.each(winIndexes, function(index, winIndex) {
+                    $('#'+winIndex).addClass('winning-square');
+                });
+            }
+        });
+    },
+
+    destroyGame: function destroyGame(callback) {
+        $.delete('/game/'+this.game_id, callback);
     }
 
 });
@@ -79,16 +120,20 @@ module.exports = Board;
 },{}],3:[function(require,module,exports){
 var Board = require('./board');
 var Game = AmpersandView.extend({
-    template:'<form class="form-container">' +
+    template: '<div id="container" class="container">' +
+        '<div class="message">Enter your names: </div>' +
+        '<form class="form-container">' +
         '<div class="form-title"></div>' +
         '<div class="form-title">Player 1</div>' +
         '<input class="form-field" type="text" name="player1" /><br />' +
         '<div class="form-title">Player 2</div>' +
         '<input class="form-field" type="text" name="player2" /><br />' +
         '<div class="submit-container">' +
-        '<input class="submit-button" type="submit" data-hook="create" value="Submit" />' +
+        '<input class="submit-button" type="submit" data-hook="create" value="Start" />' +
         '</div>' +
-      '</form>',
+      '</form>' +
+      '</div>'
+      ,
 
     events: {
         "click [data-hook=create]": "submitPlayers"
@@ -100,7 +145,15 @@ var Game = AmpersandView.extend({
         var form = $('form');
         var data = {};
         form.serializeArray().map(function(x){data[x.name] = x.value;});
-        $.post( "/game/create", JSON.stringify(data), me._initBoard);
+        $.post( "/game/create", JSON.stringify(data))
+            .done(me._initBoard)
+            .fail(function(jqXHR){
+                alert(
+                    arr = $.map(jqXHR.responseJSON.errors, function(error){
+                       return error.message;
+                    }).join('/n')
+                );
+            });
     },
 
     _initBoard: function _initBoard(response) {

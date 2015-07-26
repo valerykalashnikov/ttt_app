@@ -8,6 +8,7 @@ var Board = AmpersandView.extend({
         var html = [
             '<div id="container" class="container">' +
                 '<div class="message">' + this.player.name + ': '+ this.player.turn + ' </div>' +
+                '<button class="play-again">Play Again</button>' +
                 '<div class="gameboard">' +
                     '<div id="1" class="square r-border b-border"></div>'+
                     '<div id="2" class="square r-border b-border"></div>'+
@@ -26,7 +27,8 @@ var Board = AmpersandView.extend({
     },
 
     events: {
-        "click .square": "getMove"
+        "click .square": "getMove",
+        "click .play-again": "playAgain"
     },
 
     getMove: function getMove(e) {
@@ -41,13 +43,24 @@ var Board = AmpersandView.extend({
         );
     },
 
+    playAgain: function playAgain(e){
+        this.destroyGame(function(){
+            window.location.href = '/'
+        })
+    },
+
     _renderNextStep: function renderNextStep(response) {
         this.player = response.player;
         $('.message').html(this.player.name + ':' + this.player.turn);
         if (response.state !== "continue") {
+            this.eventManager.unbind('click', 'getMove');
+            this.off('.square');
             this._gameOver(response.state);
+            this._showWinPositions();
+            $('.play-again').show();
         }
     },
+
 
     _gameOver: function gameOver(state) {
         var renderEndMessage = function renderEndMessage(text) {
@@ -65,6 +78,34 @@ var Board = AmpersandView.extend({
                 );
             break;
         }
+    },
+
+    _showWinPositions: function showWinPositions() {
+        var winCombinations = [ [1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 4, 7],
+                            [2, 5, 8], [3, 6, 9], [1, 5, 9], [3, 5, 7] ];
+        var allEq = function(winIndexes){
+            var winValues = [];
+            $.each(winIndexes, function(index, winIndex){
+                winValues.push($('#'+winIndex).text());
+            });
+            for(var i = 1; i < winValues.length; i++) {
+                if(winValues[i] !== winValues[0]) {
+                    return false;
+                }
+            }
+            return true
+        };
+        $.each(winCombinations, function(index, winIndexes){
+            if (!!allEq(winIndexes)) {
+                $.each(winIndexes, function(index, winIndex) {
+                    $('#'+winIndex).addClass('winning-square');
+                });
+            }
+        });
+    },
+
+    destroyGame: function destroyGame(callback) {
+        $.delete('/game/'+this.game_id, callback);
     }
 
 });

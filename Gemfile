@@ -2,12 +2,15 @@ source 'https://rubygems.org'
 ruby '2.1.1'
 
 gem 'sinatra'
-gem 'ttt', github: 'valerykalashnikov/ttt'
 
-gem 'rabl'
-# Also add either `oj` or `yajl-ruby` as the JSON parser
-gem 'oj'
-
-
+#officially supported sinatra extensions
 gem 'sinatra-contrib'
-gem 'byebug', github: 'deivid-rodriguez/byebug'
+
+# render JSON as simple view
+gem 'rabl'
+# fast JSON parser and Object marshaller
+gem 'oj'
+# tic tac toe algorithm implementation
+gem 'ttt', github: 'valerykalashnikov/ttt'
+# BDD testing
+gem 'rspec', "~> 3.0", group: :test

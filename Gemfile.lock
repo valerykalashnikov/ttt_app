@@ -1,10 +1,4 @@
 GIT
-  remote: git://github.com/deivid-rodriguez/byebug.git
-  revision: 3c18937c3f81d88aa307c09bd30a59b3cbe9ea85
-  specs:
-    byebug (5.0.0)
-
-GIT
   remote: git://github.com/valerykalashnikov/ttt.git
   revision: ba8e2039777dd9ffd3213568bf287f29e546859d
   specs:
@@ -20,6 +14,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     backports (3.3.3)
+    diff-lcs (1.2.5)
     eventmachine (1.0.3)
     i18n (0.7.0)
     json (1.8.3)
@@ -32,6 +27,19 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
+    rspec (3.3.0)
+      rspec-core (~> 3.3.0)
+      rspec-expectations (~> 3.3.0)
+      rspec-mocks (~> 3.3.0)
+    rspec-core (3.3.2)
+      rspec-support (~> 3.3.0)
+    rspec-expectations (3.3.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-mocks (3.3.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-support (3.3.0)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -52,9 +60,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  byebug!
   oj
   rabl
+  rspec (~> 3.0)
   sinatra
   sinatra-contrib
   ttt!
