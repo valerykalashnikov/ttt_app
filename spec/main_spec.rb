@@ -1,6 +1,6 @@
 ENV['RACK_ENV'] = 'test'
 
-require_relative '../app.rb'  # <-- your sinatra app
+require_relative '../app/main.rb'  # <-- your sinatra app
 require 'rspec'
 require 'rack/test'
 
@@ -16,7 +16,7 @@ describe 'The TicTacToe App' do
     context "create" do
 
       let (:session) { {} }
-      subject { post '/game/create', data.to_json, {'Content-Type' => 'application/json', 'rack.session' => session} }
+      subject { post '/v1/game/create', data.to_json, {'Content-Type' => 'application/json', 'rack.session' => session} }
 
       before do
         allow(Player).to receive(:new)
@@ -72,7 +72,7 @@ describe 'The TicTacToe App' do
     context "delete" do
       let(:session) { {:game_123 => double} }
 
-      subject { delete '/game/123', {}, {'Content-Type' => 'application/json', 'rack.session' => session} }
+      subject { delete '/v1/game/123', {}, {'Content-Type' => 'application/json', 'rack.session' => session} }
       before {subject}
 
       it "delete game from session" do
@@ -96,7 +96,7 @@ describe 'The TicTacToe App' do
         subject
       end
 
-      subject { patch "/game/#{game.id}/get-move", data.to_json, {'Content-Type' => 'application/json', 'rack.session' => session} }
+      subject { patch "/v1/game/#{game.id}/get-move", data.to_json, {'Content-Type' => 'application/json', 'rack.session' => session} }
 
       context "when game not overed" do
         let (:board) { double("board", game_over: false)}

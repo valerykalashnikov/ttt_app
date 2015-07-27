@@ -43,7 +43,7 @@ var Board = AmpersandView.extend({
         e.preventDefault();
         target_el.html(this.player.turn);
         position = target_el.attr('id');
-        $.patch('/game/'+this.game_id +'/get-move',
+        $.patch('/v1/game/'+this.game_id +'/get-move',
             JSON.stringify({position: position}),
             this._renderNextStep.bind(this)
         );
@@ -111,7 +111,7 @@ var Board = AmpersandView.extend({
     },
 
     destroyGame: function destroyGame(callback) {
-        $.delete('/game/'+this.game_id, callback);
+        $.delete('/v1/game/'+this.game_id, callback);
     }
 
 });
@@ -145,7 +145,7 @@ var Game = AmpersandView.extend({
         var form = $('form');
         var data = {};
         form.serializeArray().map(function(x){data[x.name] = x.value;});
-        $.post( "/game/create", JSON.stringify(data))
+        $.post( "/v1/game/create", JSON.stringify(data))
             .done(me._initBoard)
             .fail(function(jqXHR){
                 alert(

@@ -25,7 +25,7 @@ var Game = AmpersandView.extend({
         var form = $('form');
         var data = {};
         form.serializeArray().map(function(x){data[x.name] = x.value;});
-        $.post( "/game/create", JSON.stringify(data))
+        $.post( "/v1/game/create", JSON.stringify(data))
             .done(me._initBoard)
             .fail(function(jqXHR){
                 alert(

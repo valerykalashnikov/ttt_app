@@ -1,2 +1,2 @@
-require_relative "../game.rb"
-require_relative "../player.rb"
+require_relative "../app/game.rb"
+require_relative "../app/player.rb"

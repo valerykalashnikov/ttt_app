@@ -23,7 +23,23 @@ class TicTacToe < Sinatra::Base
     send_file 'index.html'
   end
 
-  post '/game/create', provides: :json do
+  # Handles a request to create game with two players,
+  # saves new game to the session and respond by JSON
+  # POST /game/create
+  # @param player1
+  # @param player2
+  # format::
+  #   A hash with two players. This should be request body
+  #   looks like:
+  #    {player1:"Bob", player2: "Frank"}
+  #
+  # == Returns:
+  # A Rabl rendered JSON containing
+  #   1.alpfanumeric game id and current player with status 200
+  #   
+  #   2.rendered error message with status 422
+
+  post '/v1/game/create', provides: :json do
     request_payload = JSON.parse request.body.read
     player1 = Player.new({turn: "X", name: request_payload["player1"]})
     player2 = Player.new({turn: "O", name: request_payload["player2"]})
@@ -36,7 +52,25 @@ class TicTacToe < Sinatra::Base
     end
   end
 
-  patch '/game/:id/get-move', provides: :json do
+  # Handles a request to set cell on board,
+  # Switches players and send the "winner" and "draw" if game over.
+  #  == Parameters:
+  # format::
+  #   A hash with two players. Thisshould be request body
+  #   looks like {player1:"Bob", player2: "Frank"}
+  #
+  # == Returns:
+  # A Rabl rendered JSON containing
+  #   1.alpfanumeric game id and current player with status 200
+  #    game:
+  #      id:
+  #      player:
+  #        turn:
+  #        name:
+  #   2.rendered error message with status 422
+  #     errors:
+  #       
+  patch '/v1/game/:id/get-move', provides: :json do
     request_payload = JSON.parse request.body.read
     game = session[:"game_#{params[:id]}"]
     board = set_position game, request_payload["position"]
@@ -46,7 +80,14 @@ class TicTacToe < Sinatra::Base
     rabl :get_move
   end
 
-  delete '/game/:id' do
+  # Handles a request to delete game from session
+  #  == Parameters:
+  # format::
+  #   params hash containing alpanumeric game id
+  #
+  # == Returns:
+  # response with 204 status and no content
+  delete '/v1/game/:id' do
     session.delete :"game_#{params[:id]}"
     status 204
   end
