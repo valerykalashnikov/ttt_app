@@ -32,11 +32,11 @@ describe 'The TicTacToe App' do
         let(:data) { { "player1" => "bob", "player2" => "frank" } }
 
         it "creates first player" do
-          expect(Player).to have_received(:new).with(turn: 'X', name: 'bob')
+          expect(Player).to have_received(:new).with(mark: 'X', name: 'bob')
         end
 
         it "creates second player" do
-          expect(Player).to have_received(:new).with(turn: 'O', name: 'frank')
+          expect(Player).to have_received(:new).with(mark: 'O', name: 'frank')
         end
 
         it "creates the game" do

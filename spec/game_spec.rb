@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe Game do
-  let (:bob) { Player.new({turn: "X", name: "bob"}) }
-  let (:frank) { Player.new({turn: "O", name: "frank"}) }
+  let (:bob) { Player.new({mark: "X", name: "bob"}) }
+  let (:frank) { Player.new({mark: "O", name: "frank"}) }
 
   context "#initialize" do
 
@@ -12,7 +12,7 @@ describe Game do
     end
 
     context "when of players has no name" do
-      let (:frank) { Player.new({turn: "O", name: ""}) }
+      let (:frank) { Player.new({mark: "O", name: ""}) }
       subject { Game.new([bob, frank]) }
       it "should raise an error" do
         expect{ subject }.to raise_error(PlayersMustHaveNames)

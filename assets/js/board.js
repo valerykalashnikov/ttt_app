@@ -7,7 +7,7 @@ var Board = AmpersandView.extend({
     template:function (context) {
         var html = [
             '<div id="container" class="container">' +
-                '<div class="message">' + this.player.name + ': '+ this.player.turn + ' </div>' +
+                '<div class="message">' + this.player.name + ': '+ this.player.mark + ' </div>' +
                 '<button class="play-again">Play Again</button>' +
                 '<div class="gameboard">' +
                     '<div id="1" class="square r-border b-border"></div>'+
@@ -35,7 +35,7 @@ var Board = AmpersandView.extend({
         var position;
         var target_el = $(e.target)
         e.preventDefault();
-        target_el.html(this.player.turn);
+        target_el.html(this.player.mark);
         position = target_el.attr('id');
         $.patch('/v1/game/'+this.game_id +'/get-move',
             JSON.stringify({position: position}),
@@ -45,13 +45,13 @@ var Board = AmpersandView.extend({
 
     playAgain: function playAgain(e){
         this.destroyGame(function(){
-            window.location.href = '/'
+            window.location.href = '/';
         })
     },
 
     _renderNextStep: function renderNextStep(response) {
         this.player = response.player;
-        $('.message').html(this.player.name + ':' + this.player.turn);
+        $('.message').html(this.player.name + ':' + this.player.mark);
         if (response.state !== "continue") {
             this.eventManager.unbind('click', 'getMove');
             this.off('.square');

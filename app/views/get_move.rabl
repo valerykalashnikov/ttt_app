@@ -1,5 +1,5 @@
 object false
-child(@player) { attributes :turn, :name }
+child(@player) { attributes :mark, :name }
 
 node(:state) { @state || "continue" }
 

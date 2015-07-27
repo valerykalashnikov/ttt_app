@@ -40,7 +40,7 @@ class TicTacToe < Sinatra::Base
   #   => 200
   #
   #   resp.body
-  #   => {"game":{"id":"9nt7pk9x","player":{"turn":"O","name":"frank"}}}
+  #   => {"game":{"id":"9nt7pk9x","player":{"mark":"O","name":"frank"}}}
   #
   #   resp = conn.post("/v1/game/create", "player1" => "", "player2" => "")
   #
@@ -52,8 +52,8 @@ class TicTacToe < Sinatra::Base
   #
   post '/v1/game/create', provides: :json do
     request_payload = JSON.parse request.body.read
-    player1 = Player.new({turn: "X", name: request_payload["player1"]})
-    player2 = Player.new({turn: "O", name: request_payload["player2"]})
+    player1 = Player.new({mark: "X", name: request_payload["player1"]})
+    player2 = Player.new({mark: "O", name: request_payload["player2"]})
     begin
       @game = Game.new([player1, player2])
       session[:"game_#{@game.id}"] = @game
@@ -118,7 +118,7 @@ class TicTacToe < Sinatra::Base
     current_player = game.current_player
     x,y = game.get_move(human_move)
     board = game.board
-    board.set_cell(x, y, current_player.turn)
+    board.set_cell(x, y, current_player.mark)
     board
   end
 end

@@ -13,7 +13,7 @@ var Board = AmpersandView.extend({
     template:function (context) {
         var html = [
             '<div id="container" class="container">' +
-                '<div class="message">' + this.player.name + ': '+ this.player.turn + ' </div>' +
+                '<div class="message">' + this.player.name + ': '+ this.player.mark + ' </div>' +
                 '<button class="play-again">Play Again</button>' +
                 '<div class="gameboard">' +
                     '<div id="1" class="square r-border b-border"></div>'+
@@ -41,7 +41,7 @@ var Board = AmpersandView.extend({
         var position;
         var target_el = $(e.target)
         e.preventDefault();
-        target_el.html(this.player.turn);
+        target_el.html(this.player.mark);
         position = target_el.attr('id');
         $.patch('/v1/game/'+this.game_id +'/get-move',
             JSON.stringify({position: position}),
@@ -51,13 +51,13 @@ var Board = AmpersandView.extend({
 
     playAgain: function playAgain(e){
         this.destroyGame(function(){
-            window.location.href = '/'
+            window.location.href = '/';
         })
     },
 
     _renderNextStep: function renderNextStep(response) {
         this.player = response.player;
-        $('.message').html(this.player.name + ':' + this.player.turn);
+        $('.message').html(this.player.name + ':' + this.player.mark);
         if (response.state !== "continue") {
             this.eventManager.unbind('click', 'getMove');
             this.off('.square');
@@ -146,14 +146,7 @@ var Game = AmpersandView.extend({
         var data = {};
         form.serializeArray().map(function(x){data[x.name] = x.value;});
         $.post( "/v1/game/create", JSON.stringify(data))
-            .done(me._initBoard)
-            .fail(function(jqXHR){
-                alert(
-                    arr = $.map(jqXHR.responseJSON.errors, function(error){
-                       return error.message;
-                    }).join('/n')
-                );
-            });
+            .done(me._initBoard).fail(me._renderFail);
     },
 
     _initBoard: function _initBoard(response) {
@@ -163,6 +156,19 @@ var Game = AmpersandView.extend({
             el: document.getElementById('container')
         });
         board.render();
+    },
+
+    _renderFail: function(jqXHR) {
+        if (jqXHR.status == 422) {
+            alert(
+                arr = $.map(jqXHR.responseJSON.errors, function(error){
+                   return error.message;
+                }).join('/n')
+            );
+        }
+        else {
+            alert('Sorry, something went wrong');
+        }
     }
 });
 module.exports = Game;

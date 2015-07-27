@@ -11,6 +11,6 @@ gem 'rabl'
 # fast JSON parser and Object marshaller
 gem 'oj'
 # tic tac toe algorithm implementation
-gem 'ttt', github: 'valerykalashnikov/ttt'
+gem 'ttt', github: 'valerykalashnikov/ttt', :branch => 'master'
 # BDD testing
 gem 'rspec', "~> 3.0", group: :test

@@ -1,6 +1,7 @@
 GIT
   remote: git://github.com/valerykalashnikov/ttt.git
-  revision: ba8e2039777dd9ffd3213568bf287f29e546859d
+  revision: 1aa011f54ed81e3c25803e0d42559cf563629acb
+  branch: master
   specs:
     ttt (0.0.1)
 

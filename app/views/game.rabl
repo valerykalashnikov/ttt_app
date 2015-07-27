@@ -1,3 +1,3 @@
 object @game
 attributes :id
-child(:current_player) { attributes :turn, :name }
+child(:current_player) { attributes :mark, :name }

@@ -26,14 +26,7 @@ var Game = AmpersandView.extend({
         var data = {};
         form.serializeArray().map(function(x){data[x.name] = x.value;});
         $.post( "/v1/game/create", JSON.stringify(data))
-            .done(me._initBoard)
-            .fail(function(jqXHR){
-                alert(
-                    arr = $.map(jqXHR.responseJSON.errors, function(error){
-                       return error.message;
-                    }).join('/n')
-                );
-            });
+            .done(me._initBoard).fail(me._renderFail);
     },
 
     _initBoard: function _initBoard(response) {
@@ -43,6 +36,19 @@ var Game = AmpersandView.extend({
             el: document.getElementById('container')
         });
         board.render();
+    },
+
+    _renderFail: function(jqXHR) {
+        if (jqXHR.status == 422) {
+            alert(
+                arr = $.map(jqXHR.responseJSON.errors, function(error){
+                   return error.message;
+                }).join('/n')
+            );
+        }
+        else {
+            alert('Sorry, something went wrong');
+        }
     }
 });
 module.exports = Game;
