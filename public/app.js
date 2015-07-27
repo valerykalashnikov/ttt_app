@@ -4,7 +4,24 @@ var newGame = new Game({el: document.getElementById('container')});
 newGame.render();
 
 },{"./game":3}],2:[function(require,module,exports){
+/**
+ *  Manages the Tic Tac Toe grid and sending to the API cell numbers.
+ *  Checking if the game has ended with a win or a draw and propose to play again.
+ *  @extends AmpersandView
+ */
+
 var Board = AmpersandView.extend({
+    /**
+     *  @param {Object} player - first player
+     *  @param game_id - alphanumeric id of the game object
+     *
+     *     @example
+     *     new Board({
+     *          game_id: '9nt7pk9x',
+     *          player: {"mark":"O","name":"frank"},
+     *          el: document.getElementById('container')
+     *      });
+    */
     initialize: function (options) {
         this.player = options.player;
         this.game_id = options.game_id;
@@ -37,6 +54,10 @@ var Board = AmpersandView.extend({
         "click .play-again": "playAgain"
     },
 
+    /**
+     * Set X or O in the separate cell, checking if the game overed,
+     * render winner or draw game.
+    */
     getMove: function getMove(e) {
         var position;
         var target_el = $(e.target)
@@ -49,25 +70,44 @@ var Board = AmpersandView.extend({
         );
     },
 
+    /**
+     * A method to destroy the game on server.
+     * @param {Function} fn Callback function.
+     */
     playAgain: function playAgain(e){
         this.destroyGame(function(){
             window.location.href = '/';
         })
     },
 
+    /**
+     * A method to destroy the game on server.
+     * @param {Function} fn Callback function.
+     */
+    destroyGame: function destroyGame(callback) {
+        $.delete('/v1/game/'+this.game_id, callback);
+    },
+
+    /**
+     * Render next step and checks if the game has ended with the winner of draw.
+     * Unbind click on cell if the game overed.
+     * @private
+     */
     _renderNextStep: function renderNextStep(response) {
         this.player = response.player;
         $('.message').html(this.player.name + ':' + this.player.mark);
         if (response.state !== "continue") {
             this.eventManager.unbind('click', 'getMove');
-            this.off('.square');
             this._gameOver(response.state);
             this._showWinPositions();
             $('.play-again').show();
         }
     },
 
-
+    /**
+     * Render game over message depends on winner or draw state.
+     * @private
+     */
     _gameOver: function gameOver(state) {
         var renderEndMessage = function renderEndMessage(text) {
             $('.message').text(text).addClass('end-message');
@@ -86,6 +126,12 @@ var Board = AmpersandView.extend({
         }
     },
 
+    /**
+     * Function to find winning position.
+     * It doesn't care about who wins, it just find and mark winning position
+     * by 'winning-square' css class.
+     * @private
+     */
     _showWinPositions: function showWinPositions() {
         var winCombinations = [ [1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 4, 7],
                             [2, 5, 8], [3, 6, 9], [1, 5, 9], [3, 5, 7] ];
@@ -108,16 +154,20 @@ var Board = AmpersandView.extend({
                 });
             }
         });
-    },
-
-    destroyGame: function destroyGame(callback) {
-        $.delete('/v1/game/'+this.game_id, callback);
     }
 
 });
 module.exports = Board;
 
 },{}],3:[function(require,module,exports){
+/**
+ *  Manages the Tic Tac Toe game initialization.
+ *  Only creates the new game and send request to game create to the API.
+ *  @extends AmpersandView
+ *
+ *     @example
+ *     new Game();
+ */
 var Board = require('./board');
 var Game = AmpersandView.extend({
     template: '<div id="container" class="container">' +
@@ -139,6 +189,10 @@ var Game = AmpersandView.extend({
         "click [data-hook=create]": "submitPlayers"
     },
 
+    /**
+     * Send players names to the server and change if init the gameboard,
+     * or render fail.
+    */
     submitPlayers: function submitPlayers (e) {
         e.preventDefault();
         var me = this;
@@ -149,6 +203,10 @@ var Game = AmpersandView.extend({
             .done(me._initBoard).fail(me._renderFail);
     },
 
+    /**
+     * @private
+     * A method to create gameboard
+    */
     _initBoard: function _initBoard(response) {
         var board = new Board({
             game_id: response.game.id,
@@ -158,6 +216,11 @@ var Game = AmpersandView.extend({
         board.render();
     },
 
+    /**
+     * @private
+     * A method to render validation error if response status is 422
+     * or render kind message if error unknow.
+    */
     _renderFail: function(jqXHR) {
         if (jqXHR.status == 422) {
             alert(

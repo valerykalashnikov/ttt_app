@@ -1,3 +1,11 @@
+/**
+ *  Manages the Tic Tac Toe game initialization.
+ *  Only creates the new game and send request to game create to the API.
+ *  @extends AmpersandView
+ *
+ *     @example
+ *     new Game();
+ */
 var Board = require('./board');
 var Game = AmpersandView.extend({
     template: '<div id="container" class="container">' +
@@ -19,6 +27,10 @@ var Game = AmpersandView.extend({
         "click [data-hook=create]": "submitPlayers"
     },
 
+    /**
+     * Send players names to the server and change if init the gameboard,
+     * or render fail.
+    */
     submitPlayers: function submitPlayers (e) {
         e.preventDefault();
         var me = this;
@@ -29,6 +41,10 @@ var Game = AmpersandView.extend({
             .done(me._initBoard).fail(me._renderFail);
     },
 
+    /**
+     * @private
+     * A method to create gameboard
+    */
     _initBoard: function _initBoard(response) {
         var board = new Board({
             game_id: response.game.id,
@@ -38,6 +54,11 @@ var Game = AmpersandView.extend({
         board.render();
     },
 
+    /**
+     * @private
+     * A method to render validation error if response status is 422
+     * or render kind message if error unknow.
+    */
     _renderFail: function(jqXHR) {
         if (jqXHR.status == 422) {
             alert(
