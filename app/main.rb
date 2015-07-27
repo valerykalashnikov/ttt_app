@@ -23,22 +23,33 @@ class TicTacToe < Sinatra::Base
     send_file 'index.html'
   end
 
-  # Handles a request to create game with two players,
-  # saves new game to the session and respond by JSON
-  # POST /game/create
-  # @param player1
-  # @param player2
-  # format::
-  #   A hash with two players. This should be request body
-  #   looks like:
-  #    {player1:"Bob", player2: "Frank"}
+  ##
+  # Handles a request to create game with two players
   #
-  # == Returns:
-  # A Rabl rendered JSON containing
-  #   1.alpfanumeric game id and current player with status 200
-  #   
-  #   2.rendered error message with status 422
-
+  # POST /v1/game/create
+  #
+  # params:
+  #   player1 - Name of the first player
+  #   player2 - Name of the second player
+  #
+  # = Examples
+  #
+  #   resp = conn.post("/v1/game/create", "player1" => "bob", "player2" => "frank")
+  #
+  #   resp.status
+  #   => 200
+  #
+  #   resp.body
+  #   => {"game":{"id":"9nt7pk9x","player":{"turn":"O","name":"frank"}}}
+  #
+  #   resp = conn.post("/v1/game/create", "player1" => "", "player2" => "")
+  #
+  #   resp.status
+  #   => 422
+  #
+  #   resp.body
+  #   => {"errors":[{"message":"You must specify your names before start the game"}]}
+  #
   post '/v1/game/create', provides: :json do
     request_payload = JSON.parse request.body.read
     player1 = Player.new({turn: "X", name: request_payload["player1"]})
@@ -52,24 +63,22 @@ class TicTacToe < Sinatra::Base
     end
   end
 
-  # Handles a request to set cell on board,
-  # Switches players and send the "winner" and "draw" if game over.
-  #  == Parameters:
-  # format::
-  #   A hash with two players. Thisshould be request body
-  #   looks like {player1:"Bob", player2: "Frank"}
+  ##
+  # Handles a request to to set cell on board, switches players and
+  # define the winner or the draw game
   #
-  # == Returns:
-  # A Rabl rendered JSON containing
-  #   1.alpfanumeric game id and current player with status 200
-  #    game:
-  #      id:
-  #      player:
-  #        turn:
-  #        name:
-  #   2.rendered error message with status 422
-  #     errors:
-  #       
+  # PATCH /v1/game/:id/get-move
+  #
+  # params:
+  #   id - alphanumeric game id
+  #   postion - Position on board from 1 to 9
+  #
+  # = Examples
+  #
+  #   resp = conn.patch("/v1/game/9nt7pk9x/get-move", "position" => "3")
+  #
+  #   resp.status
+  #   => 200
   patch '/v1/game/:id/get-move', provides: :json do
     request_payload = JSON.parse request.body.read
     game = session[:"game_#{params[:id]}"]
@@ -80,13 +89,18 @@ class TicTacToe < Sinatra::Base
     rabl :get_move
   end
 
-  # Handles a request to delete game from session
-  #  == Parameters:
-  # format::
-  #   params hash containing alpanumeric game id
+  ##
+  # DELETE /v1/game/:id
   #
-  # == Returns:
-  # response with 204 status and no content
+  # params:
+  #   id - alphanumeric game id
+  #
+  # = Examples
+  #
+  #   resp = conn.delete("/v1/game/9nt7pk9x")
+  #
+  #   resp.status
+  #   => 204
   delete '/v1/game/:id' do
     session.delete :"game_#{params[:id]}"
     status 204
